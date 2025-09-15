@@ -24,6 +24,12 @@ public class EventService {
 
     private final List<SSESubscriber> subscribers = new CopyOnWriteArrayList<>();
 
+    /**
+     * Saves a new event into the database and triggers an update broadcast.
+     *
+     * @param event the event to be ingested
+     * @return the saved event as a DTO
+     */
     public Event ingestEvent(Event event) {
         EventEntity eventEntity = new EventEntity(
                 event.getId(), event.getCategory(), event.getPoints(), event.getTimestamp());
@@ -32,6 +38,10 @@ public class EventService {
         return Event.fromEntity(savedEntity);
     }
 
+    /**
+     * Broadcasts updated leaderboard data to all active SSE subscribers.
+     * Removes subscribers that fail during the update push.
+     */
     private void broadcastUpdate() {
         for (SSESubscriber sub : subscribers) {
             try {
@@ -45,6 +55,12 @@ public class EventService {
         }
     }
 
+    /**
+     * Retrieves leaderboard entries for the given time window.
+     *
+     * @param windowKey the time window ("all", "5m", "1h")
+     * @return a sorted list of leaderboard entries with total points aggregated
+     */
     public List<LeaderboardEntry> getLeaderboardEntryList(String windowKey) {
         Instant since = windowToInstant(windowKey);
         List<LeaderboardEntry> result =
@@ -56,6 +72,12 @@ public class EventService {
         return leaderboardEntryList;
     }
 
+    /**
+     * Maps a window key to its corresponding {@link Instant}.
+     *
+     * @param windowKey the time window ("all", "5m", "1h")
+     * @return the {@link Instant} cutoff, or null for "all"
+     */
     private Instant windowToInstant(String windowKey) {
         if (windowKey == null || windowKey.isEmpty() || "all".equals(windowKey)) {
             return null;
@@ -70,6 +92,12 @@ public class EventService {
         }
     }
 
+    /**
+     * Creates and registers a new {@link SseEmitter} subscriber for leaderboard updates.
+     *
+     * @param windowKey the time window for leaderboard aggregation
+     * @return the initialized {@link SseEmitter} with current leaderboard data
+     */
     public SseEmitter createEmitter(String windowKey) {
         SseEmitter emitter = new SseEmitter(0L);
         SSESubscriber subscriber = new SSESubscriber(emitter, windowKey);

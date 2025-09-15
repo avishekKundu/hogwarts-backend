@@ -20,17 +20,35 @@ public class EventController {
         this.eventService = eventService;
     }
 
+    /**
+     * Ingests a new event into the system.
+     *
+     * @param event the event payload received from the client
+     * @return ResponseEntity containing the saved event
+     */
     @PostMapping("/ingest/event")
     public ResponseEntity<Event> ingestEvent(@RequestBody @Valid Event event) {
         Event savedEvent = eventService.ingestEvent(event);
         return ResponseEntity.ok().body(savedEvent);
     }
 
+    /**
+     * Retrieves the leaderboard entries based on the requested time window.
+     *
+     * @param window the time window for leaderboard aggregation ("all", "5m", "1h")
+     * @return a list of leaderboard entries sorted by points in descending order
+     */
     @GetMapping("/leaderboard")
     public List<LeaderboardEntry> getLeaderboard(@RequestParam(defaultValue = "all") String window) {
         return eventService.getLeaderboardEntryList(window);
     }
 
+    /**
+     * Creates a server-sent events (SSE) stream for leaderboard updates.
+     *
+     * @param window the time window for leaderboard aggregation ("all", "5m", "1h")
+     * @return a configured {@link SseEmitter} that streams leaderboard updates
+     */
     @GetMapping(path = "/leaderboard/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@RequestParam(defaultValue = "all") String window) {
         return eventService.createEmitter(window);
