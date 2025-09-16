@@ -24,9 +24,12 @@ MySQL Workbench (or MySQL CLI)
 
 Setup Instructions
 
-Clone the Repository
+## 📂 Project Setup
 
-git clone https://github.com/avishekKundu/hogwarts-backend.git
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/avishekKundu/hogwarts-backend.git
+   cd hogwarts-backend
 
 Configure Database
 
